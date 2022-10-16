@@ -15,7 +15,7 @@ public class FontPacked : FontCache
         this.atlas.LoadImage(atlas);
         var info = JsonConvert.DeserializeObject<FontPackedInfo>(Encoding.UTF8.GetString(json));
         if(info is null) throw new InvalidOperationException();
-        Name = Path.GetFileName(info.fontpath);
+        Name = Path.GetFileNameWithoutExtension(info.fontpath);
         foreach(var v in info.data)
         {
             var gl = new TMP_Glyph();

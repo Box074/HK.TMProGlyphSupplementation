@@ -1,0 +1,13 @@
+
+HK.TMPro.Menu.UnpackedFont=未打包的字体
+HK.TMPro.Menu.PackedFonts=打包的字体
+HK.TMPro.Menu.Enabled=已启用
+HK.TMPro.Menu.Mode=模式
+HK.TMPro.Mode.Override=覆盖
+HK.TMPro.Mode.Fallback=补充
+HK.TMPro.Menu.Priority=优先级
+HK.TMPro.P.Highest=最高
+HK.TMPro.P.High=高
+HK.TMPro.P.Normal=普通
+HK.TMPro.P.Low=低
+HK.TMPro.P.Lowest=最低

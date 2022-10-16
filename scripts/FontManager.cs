@@ -44,6 +44,19 @@ public static class FontManager
             }
         };
     }
+    internal static void ApplyFontConfig(FontCache font, TMProGlyphSupplementation.GS.FontConfig config)
+    {
+        font.Priority = config.priority;
+        font.Mode = config.mode;
+        if(config.enabled)
+        {
+            font.Apply();
+        }
+        else
+        {
+            font.Undo();
+        }
+    }
     private static List<TMP_FontAsset> rootFonts = null!;
     private static Dictionary<string, TMP_FontAsset> fontCache = new();
     public static TMP_FontAsset? GetFontAsset(string name)

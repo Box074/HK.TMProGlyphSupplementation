@@ -1,11 +1,14 @@
 {
     "modName": "TMProGlyphSupplementation",
-    "modVersion": "0.0.0.0",
+    "modVersion": "0.0.1.0",
     "codeDir": "./scripts",
     "libraryDir": "./library",
     "csCompileInfo": true,
     "enableNullableCheck": true,
-    "resources": {},
+    "resources": {
+        "./res/zh.txt": "lang.zh",
+        "./res/en.txt": "lang.en"
+    },
     "reference": [],
     "dependencies": [
         {
@@ -35,7 +38,19 @@
     "hktool": {
         "referenceLib": true,
         "modifyIL": true,
-        "inlineHook": true
+        "inlineHook": true,
+        "externRes": true,
+        "compressResources": true,
+        "modRes": {
+            "lang.zh": {
+                "name": "LANG_ZH",
+                "type": "utf8"
+            },
+            "lang.en": {
+                "name": "LANG_EN",
+                "type": "utf8"
+            }
+        }
     },
     "csproj": {
         "itemGroup": {

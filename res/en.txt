@@ -1,0 +1,13 @@
+
+HK.TMPro.Menu.UnpackedFont=Unpacked Font
+HK.TMPro.Menu.PackedFonts=Packed Fonts
+HK.TMPro.Menu.Enabled=Enabled
+HK.TMPro.Menu.Mode=Mode
+HK.TMPro.Mode.Override=Override
+HK.TMPro.Mode.Fallback=Fallback
+HK.TMPro.Menu.Priority=Priority
+HK.TMPro.P.Highest=Highest
+HK.TMPro.P.High=High
+HK.TMPro.P.Normal=Normal
+HK.TMPro.P.Low=Low
+HK.TMPro.P.Lowest=Lowest
