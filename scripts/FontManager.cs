@@ -75,8 +75,28 @@ public static class FontManager
             }
         }
     }
+    private static bool _fake_root = false;
+    private static void CreateFakeRoot()
+    {
+        if(_fake_root) return;
+        
+        foreach(var v in RootFonts)
+        {
+            var of = v.fallbackFontAssets;
+            v.fallbackFontAssets = new();
+
+            var fake = UnityEngine.Object.Instantiate(v);
+
+            v.fallbackFontAssets = of;
+            v.fallbackFontAssets.Insert(0, fake);
+            v.private_m_glyphInfoList() = new();
+            v.ReadFontDefinition();
+        }
+        _fake_root = true;
+    }
     public static void RefreshFonts()
     {
+        CreateFakeRoot();
         foreach (var f in fontAssets)
         {
             foreach (var v in RootFonts)
