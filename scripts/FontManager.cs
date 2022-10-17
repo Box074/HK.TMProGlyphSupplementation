@@ -43,6 +43,14 @@ public static class FontManager
                 oarr = arr;
             }
         };
+        On.TMPro.TMP_SubMesh.OnEnable += (orig, self) =>
+        {
+            if(self.fontAsset != null && self.sharedMaterial == null)
+            {
+                self.sharedMaterial = self.fontAsset.material;
+            }
+            orig(self);
+        };
     }
     internal static void ApplyFontConfig(FontCache font, TMProGlyphSupplementation.GS.FontConfig config)
     {
@@ -140,7 +148,7 @@ public static class FontManager
                 r.fallbackFontAssets.Insert(0, v.Item1);
             }
         }
-        foreach (var v in overrideFonts.OrderByDescending(x => x.Item2))
+        foreach (var v in fallbacksFonts.OrderByDescending(x => x.Item2))
         {
             foreach (var r in rf)
             {
@@ -171,6 +179,8 @@ public static class FontManager
                     oarr = arr;
                 }
             }
+            v.SetVerticesDirty();
+            v.SetLayoutDirty();
         }
     }
     private static Dictionary<FontCache, TMP_FontAsset> fonts = new();

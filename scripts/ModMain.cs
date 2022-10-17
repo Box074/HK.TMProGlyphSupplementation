@@ -1,5 +1,6 @@
 
 using GlobalEnums;
+using UnityEngine.UI;
 
 namespace TMProGS;
 
@@ -8,7 +9,12 @@ class TMProGlyphSupplementation : ModBaseWithSettings<TMProGlyphSupplementation,
 {
     public const string UnpackedInnerName = "Dispersive Font";
     public override string DisplayName => "TMPro Glyph Supplementation";
-    public override string MenuButtonName => DisplayName;
+    //public override string MenuButtonName => DisplayName;
+    protected override void AfterCreateModListButton(MenuButton button)
+    {
+        base.AfterCreateModListButton(button);
+        button.GetLabelText()!.text = DisplayName;
+    }
     public class GS
     {
         public class FontConfig
@@ -95,7 +101,7 @@ class TMProGlyphSupplementation : ModBaseWithSettings<TMProGlyphSupplementation,
                 continue;
             }
             Log($"Load packed font: {v}");
-            var cache = new FontPacked(File.ReadAllBytes(v), File.ReadAllBytes(atlas));
+            var cache = new FontPacked(File.ReadAllBytes(v), File.ReadAllBytes(atlas), v);
             var config = globalSettings.GetConfig(cache.Name);
             FontManager.ApplyFontConfig(cache, config);
             caches.Add(cache);

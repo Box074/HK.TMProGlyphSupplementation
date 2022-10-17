@@ -12,6 +12,8 @@ public abstract class FontCache
     {
         this.maker = maker;
     }
+    public FontCache() : this(null!)
+    {}
     protected FontMaker maker;
     public FontMode Mode { get; set; } = FontMode.Override;
     public int Priority { get; set; } = 0;
@@ -95,6 +97,11 @@ public abstract class FontCache
         font.material = UnityEngine.Object.Instantiate(template.material);
         Replace(font);
         return font;
+    }
+
+    public override string ToString()
+    {
+        return Name;
     }
 
     [NonSerialized]
