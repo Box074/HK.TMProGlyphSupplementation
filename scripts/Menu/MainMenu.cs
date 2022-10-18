@@ -11,8 +11,8 @@ class MainMenu : CustomMenu
         listMenu = new(this);
         ctrl = new(this);
     }
-    public (string, string, List<FontCache>) font = ("HK.TMPro.Menu.UnpackedFont".Localize(), TMProGlyphSupplementation.UnpackedInnerName
-        , new(){TMProGlyphSupplementation.unpackedFont});
+    public (string, string, List<FontCache>) font = ("HK.TMPro.Menu.UnpackedFont".Localize(), TextMeshProGlyphSupplementation.UnpackedInnerName
+        , new(){TextMeshProGlyphSupplementation.unpackedFont});
     protected override void Build(ContentArea contentArea)
     {
         AddButton("HK.TMPro.Menu.PackedFonts".Localize(), "", ()=>

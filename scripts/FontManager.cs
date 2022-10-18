@@ -17,46 +17,72 @@ public static class FontManager
         [LanguageCode.JA] = new[] { "japanese_body", "japanese_title", "japanese_body_bold" },
         //[LanguageCode.TR] = new[] { "trajan_bold_tmpro" }
     };
-    static FontManager()
+    private static void UpdateTMProText(TMP_Text inst)
     {
-        On.TMPro.TextMeshPro.Awake += (orig, self) =>
+        int requireCount = fontAssets.Count + 8;
+
+        if (inst is TextMeshPro tmp)
         {
-            orig(self);
-            int requireCount = fontAssets.Count + 2;
-            ref var oarr = ref self.private_m_subTextObjects();
+            ref var oarr = ref tmp.private_m_subTextObjects();
             if (oarr.Length < requireCount)
             {
                 var arr = new TMP_SubMesh[requireCount + 16];
                 Array.Copy(oarr, arr, oarr.Length);
                 oarr = arr;
             }
-        };
-        On.TMPro.TextMeshProUGUI.Awake += (orig, self) =>
+        }
+        if (inst is TextMeshProUGUI tmpUI)
         {
-            orig(self);
-            int requireCount = fontAssets.Count + 2;
-            ref var oarr = ref self.private_m_subTextObjects();
+            ref var oarr = ref tmpUI.private_m_subTextObjects();
             if (oarr.Length < requireCount)
             {
                 var arr = new TMP_SubMeshUI[requireCount + 16];
                 Array.Copy(oarr, arr, oarr.Length);
                 oarr = arr;
             }
+        }
+        ref var mr = ref inst.private_m_materialReferences();
+        if(mr.Length < requireCount)
+        {
+            var arr = new MaterialReference[requireCount + 32];
+            Array.Copy(mr, arr, mr.Length);
+            mr = arr;
+        }
+    }
+    static FontManager()
+    {
+        On.TMPro.TextMeshPro.Awake += (orig, self) =>
+        {
+            orig(self);
+            UpdateTMProText(self);
+        };
+        On.TMPro.TextMeshProUGUI.Awake += (orig, self) =>
+        {
+            orig(self);
+            UpdateTMProText(self);
         };
         On.TMPro.TMP_SubMesh.OnEnable += (orig, self) =>
         {
-            if(self.fontAsset != null && self.sharedMaterial == null)
-            {
-                self.sharedMaterial = self.fontAsset.material;
-            }
+            if (self.GetComponent<TMP_SubMeshCheck>() is null) self.gameObject.AddComponent<TMP_SubMeshCheck>().submesh = self;
             orig(self);
         };
     }
-    internal static void ApplyFontConfig(FontCache font, TMProGlyphSupplementation.GS.FontConfig config)
+    class TMP_SubMeshCheck : MonoBehaviour
+    {
+        public TMP_SubMesh submesh = null!;
+        private void Update()
+        {
+            if (submesh.fontAsset != null && submesh.sharedMaterial == null)
+            {
+                submesh.sharedMaterial = submesh.fontAsset.material;
+            }
+        }
+    }
+    internal static void ApplyFontConfig(FontCache font, TextMeshProGlyphSupplementation.GS.FontConfig config)
     {
         font.Priority = config.priority;
         font.Mode = config.mode;
-        if(config.enabled)
+        if (config.enabled)
         {
             font.Apply();
         }
@@ -99,9 +125,9 @@ public static class FontManager
     private static bool _fake_root = false;
     private static void CreateFakeRoot()
     {
-        if(_fake_root) return;
-        
-        foreach(var v in RootFonts)
+        if (_fake_root) return;
+
+        foreach (var v in RootFonts)
         {
             var of = v.fallbackFontAssets;
             v.fallbackFontAssets = new();
@@ -156,29 +182,11 @@ public static class FontManager
                 r.fallbackFontAssets.Append(v.Item1);
             }
         }
-        int requireCount = fontAssets.Count + 2;
-        foreach (var v in UnityEngine.Object.FindObjectsOfType<TMP_Text>())
+        
+        foreach (var v in UnityEngine.Object.FindObjectsOfType<TMP_Text>(true))
         {
-            if (v is TextMeshPro tmp)
-            {
-                ref var oarr = ref tmp.private_m_subTextObjects();
-                if (oarr.Length < requireCount)
-                {
-                    var arr = new TMP_SubMesh[requireCount + 16];
-                    Array.Copy(oarr, arr, oarr.Length);
-                    oarr = arr;
-                }
-            }
-            if (v is TextMeshProUGUI tmpUI)
-            {
-                ref var oarr = ref tmpUI.private_m_subTextObjects();
-                if (oarr.Length < requireCount)
-                {
-                    var arr = new TMP_SubMeshUI[requireCount + 16];
-                    Array.Copy(oarr, arr, oarr.Length);
-                    oarr = arr;
-                }
-            }
+            UpdateTMProText(v);
+            v.havePropertiesChanged = true;
             v.SetVerticesDirty();
             v.SetLayoutDirty();
         }

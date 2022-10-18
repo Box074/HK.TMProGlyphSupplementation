@@ -12,7 +12,7 @@ class FontListMenu : CustomMenu
     protected override void Build(ContentArea contentArea)
     {
         Dictionary<string, List<FontCache>> fonts = new();
-        foreach(var v in TMProGlyphSupplementation.caches)
+        foreach(var v in TextMeshProGlyphSupplementation.caches)
         {
             if(v is not FontPacked font) continue;
             if(!fonts.TryGetValue(font.Name, out var f))

@@ -1,8 +1,6 @@
 
 # TMPro Glyph Supplementation
 
-## 使用方法
-
 字体资源一般存放于`mod安装目录\fonts`目录下，可以通过全局配置文件中的`fontsDir`更改。以下提到的`fonts`目录未特殊说明均指该目录。
 
 目录结构：

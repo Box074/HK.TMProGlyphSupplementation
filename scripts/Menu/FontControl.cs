@@ -4,7 +4,7 @@ namespace TMProGS.Menu;
 class FontControl : CustomMenu
 {
     public (string displayName, string innerName, List<FontCache> fonts) fonts;
-    public TMProGlyphSupplementation.GS.FontConfig config = new();
+    public TextMeshProGlyphSupplementation.GS.FontConfig config = new();
     public override Font titleFont => FontPerpetua;
     public enum FontPriority
     {
@@ -63,7 +63,7 @@ class FontControl : CustomMenu
     }
     protected override void Back()
     {
-        TMProGlyphSupplementation.Instance.SaveGlobalSettings();
+        TextMeshProGlyphSupplementation.Instance.SaveGlobalSettings();
         FontManager.autoRefresh = false;
         foreach (var v in fonts.fonts)
         {
@@ -76,7 +76,7 @@ class FontControl : CustomMenu
     protected override void OnEnterMenu()
     {
         titleText.text = fonts.displayName;
-        config = TMProGlyphSupplementation.Instance.globalSettings.GetConfig(fonts.innerName);
+        config = TextMeshProGlyphSupplementation.Instance.globalSettings.GetConfig(fonts.innerName);
 
         Refresh();
     }

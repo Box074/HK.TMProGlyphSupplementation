@@ -4,8 +4,8 @@ using UnityEngine.UI;
 
 namespace TMProGS;
 
-class TMProGlyphSupplementation : ModBaseWithSettings<TMProGlyphSupplementation, TMProGlyphSupplementation.GS, object>,
-    IGlobalSettings<TMProGlyphSupplementation.GS>, ICustomMenuMod
+class TextMeshProGlyphSupplementation : ModBaseWithSettings<TextMeshProGlyphSupplementation, TextMeshProGlyphSupplementation.GS, object>,
+    IGlobalSettings<TextMeshProGlyphSupplementation.GS>, ICustomMenuMod
 {
     public const string UnpackedInnerName = "Dispersive Font";
     public override string DisplayName => "TMPro Glyph Supplementation";
@@ -23,7 +23,7 @@ class TMProGlyphSupplementation : ModBaseWithSettings<TMProGlyphSupplementation,
             public int priority = 0;
             public FontCache.FontMode mode = FontCache.FontMode.Override;
         }
-        public string fontsDir = Path.Combine(Path.GetDirectoryName(typeof(TMProGlyphSupplementation).Assembly.Location), "fonts");
+        public string fontsDir = Path.Combine(Path.GetDirectoryName(typeof(TextMeshProGlyphSupplementation).Assembly.Location), "fonts");
         public Dictionary<string, FontConfig> fonts = new();
         public FontConfig GetConfig(string innerName)
         {
@@ -52,7 +52,7 @@ class TMProGlyphSupplementation : ModBaseWithSettings<TMProGlyphSupplementation,
     {
         get
         {
-            var path = TMProGlyphSupplementation.Instance.globalSettings.fontsDir;
+            var path = TextMeshProGlyphSupplementation.Instance.globalSettings.fontsDir;
             Directory.CreateDirectory(path);
             return path;
         }
