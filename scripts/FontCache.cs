@@ -105,7 +105,7 @@ public abstract class FontCache
     }
 
     [NonSerialized]
-    protected Texture2D? atlas;
+    internal protected Texture2D? atlas;
     public Texture2D? Atlas
     {
         get

@@ -12,7 +12,12 @@ class MainMenu : CustomMenu
         ctrl = new(this);
     }
     public (string, string, List<FontCache>) font = ("HK.TMPro.Menu.UnpackedFont".Localize(), TextMeshProGlyphSupplementation.UnpackedInnerName
-        , new(){TextMeshProGlyphSupplementation.unpackedFont});
+        , null!);
+    protected override void Back()
+    {
+        TextMeshProGlyphSupplementation.Instance.SaveGlobalSettings();
+        base.Back();
+    }
     protected override void Build(ContentArea contentArea)
     {
         AddButton("HK.TMPro.Menu.PackedFonts".Localize(), "", ()=>
@@ -22,8 +27,17 @@ class MainMenu : CustomMenu
         }, FontPerpetua);
         AddButton("HK.TMPro.Menu.UnpackedFont".Localize(), "", () =>
         {
+            font.Item3 = new(TextMeshProGlyphSupplementation.unpackedFont);
             ctrl.fonts = font;
             GoToMenu(ctrl);
         }, FontPerpetua);
+        AddOption("HK.TMPro.Menu.AtlasSize".Localize(), "HK.TMPro.Menu.AtlasSize.Desc".Localize(), new[]{
+            "16384x16384",
+            "8192x8192",
+            "4096x4096",
+            "2048x2048",
+            "1024x1024"
+        }, val => TextMeshProGlyphSupplementation.Instance.globalSettings.atlasSize = val - 2,
+        () => TextMeshProGlyphSupplementation.Instance.globalSettings.atlasSize + 2, FontPerpetua);
     }
 }

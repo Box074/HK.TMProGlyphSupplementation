@@ -11,3 +11,4 @@ HK.TMPro.P.High=High
 HK.TMPro.P.Normal=Normal
 HK.TMPro.P.Low=Low
 HK.TMPro.P.Lowest=Lowest
+HK.TMPro.Menu.AtlasSize=Atlas size

@@ -11,3 +11,5 @@ HK.TMPro.P.High=高
 HK.TMPro.P.Normal=普通
 HK.TMPro.P.Low=低
 HK.TMPro.P.Lowest=最低
+HK.TMPro.Menu.AtlasSize=图集大小
+HK.TMPro.Menu.AtlasSize.Desc=建议为4096x4096
