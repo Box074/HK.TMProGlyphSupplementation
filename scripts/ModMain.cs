@@ -224,7 +224,6 @@ class TextMeshProGlyphSupplementation : ModBaseWithSettings<TextMeshProGlyphSupp
         unpackedFont.AutoApply = true;
         watch.Stop();
         Log($"Apply glyphs: {watch.ElapsedMilliseconds}ms");
-        unpackedFont.ApplyAtlas();
         unpackedFont.SaveCache(UnpackedInnerName, true);
         SaveGlobalSettings();
         foreach (var v in unpackedFont) caches.Add(v);

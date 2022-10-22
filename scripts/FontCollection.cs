@@ -111,7 +111,7 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
             glyphs.Remove(glyph);
             return true;
         }
-        public TMP_Glyph AddGlyph(int unicode, Rect rect)
+        public TMP_Glyph AddGlyph(int unicode, RectInt rect)
         {
             if (atlas == null) throw new InvalidOperationException();
             TMP_Glyph glyph = new();
@@ -267,7 +267,6 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
         return fai.RemoveGlyph(unicode);
     }
     public bool AutoApply { get; set; } = true;
-    private HashSet<Texture2D> requireApply = new();
     public void AddGlyph(int unicode, Texture2D tex, bool canreplace = true)
     {
         var fai = state.FindGlyph(unicode);
@@ -305,7 +304,7 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
                 state.atlas.Add(state.currentAtlas);
                 state.currentAtlas = new(state);
             }
-            state.currentAtlas.atlas = new((int)atlasSize.x, (int)atlasSize.y, TextureFormat.RGBA32, false);
+            state.currentAtlas.atlas = new((int)atlasSize.x, (int)atlasSize.y, TextureFormat.Alpha8, false);
             var c = state.currentAtlas.atlas.GetRawTextureData<Color32>();
             var col = new Color32(0, 0, 0, 0);
             for (int i = 0; i < c.Length; i++)
@@ -316,10 +315,10 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
             goto _RE_TRY;
         }
 
-        Rect rect = new(state.nextX, state.nextY, tex.width, tex.height);
+        RectInt rect = new(state.nextX, state.nextY, tex.width, tex.height);
 
         var atlas = state.currentAtlas.atlas!;
-        var cols = atlas.GetRawTextureData<Color32>();
+        /*var cols = atlas.GetRawTextureData<Color32>();
         var scols = tex.GetPixels32(0);
         for (int y = 0; y < tex.height; y++)
         {
@@ -331,17 +330,11 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
             }
         }
         if(AutoApply) atlas.Apply();
-        else requireApply.Add(atlas);
+        else requireApply.Add(atlas);*/
+        tex.CopyTo(atlas, rect.min, new(0,0), rect.size);
+
         state.nextX += tex.width + padding;
 
         state.currentAtlas.AddGlyph(unicode, rect);
-    }
-    public void ApplyAtlas()
-    {
-        foreach(var v in requireApply)
-        {
-            v.Apply();
-        }
-        requireApply.Clear();
     }
 }

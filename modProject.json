@@ -33,6 +33,10 @@
         {
             "name": "HKTool",
             "url": "https://github.com/HKLab/HollowKnightMod.Tool/releases/latest/download/Output.zip"
+        },
+        {
+            "name": "GraphicsLib",
+            "url": "https://github.com/HKLab/HK.Graphics/releases/download/v0.0.1.0/Output.zip"
         }
     ],
     "hktool": {

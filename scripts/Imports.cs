@@ -26,3 +26,5 @@ global using Newtonsoft.Json;
 global using Newtonsoft;
 
 global using TMProGS.Menu;
+
+global using HKGraphics;
