@@ -32,12 +32,10 @@ class MainMenu : CustomMenu
             GoToMenu(ctrl);
         }, FontPerpetua);
         AddOption("HK.TMPro.Menu.AtlasSize".Localize(), "HK.TMPro.Menu.AtlasSize.Desc".Localize(), new[]{
-            "16384x16384",
-            "8192x8192",
             "4096x4096",
             "2048x2048",
             "1024x1024"
-        }, val => TextMeshProGlyphSupplementation.Instance.globalSettings.atlasSize = val - 2,
-        () => TextMeshProGlyphSupplementation.Instance.globalSettings.atlasSize + 2, FontPerpetua);
+        }, val => TextMeshProGlyphSupplementation.Instance.globalSettings.AtlasSize = val,
+        () => TextMeshProGlyphSupplementation.Instance.globalSettings.AtlasSize, FontPerpetua);
     }
 }

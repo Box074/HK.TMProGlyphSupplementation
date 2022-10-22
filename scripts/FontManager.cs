@@ -42,7 +42,7 @@ public static class FontManager
             }
         }
         ref var mr = ref inst.private_m_materialReferences();
-        if(mr.Length < requireCount)
+        if (mr.Length < requireCount)
         {
             var arr = new MaterialReference[requireCount + 32];
             Array.Copy(mr, arr, mr.Length);
@@ -146,11 +146,16 @@ public static class FontManager
         CreateFakeRoot();
         foreach (var f in fontAssets)
         {
+            if (TMP_Settings.fallbackFontAssets is not null)
+            {
+                TMP_Settings.fallbackFontAssets.Remove(f);
+            }
             foreach (var v in RootFonts)
             {
                 v.fallbackFontAssets.Remove(f);
             }
         }
+
         fontAssets.Clear();
         List<(TMP_FontAsset, int)> overrideFonts = new();
         List<(TMP_FontAsset, int)> fallbacksFonts = new();
@@ -168,21 +173,22 @@ public static class FontManager
         var rf = RootFonts;
         foreach (var v in overrideFonts.OrderBy(x => x.Item2))
         {
+            fontAssets.Add(v.Item1);
             foreach (var r in rf)
             {
-                fontAssets.Add(v.Item1);
                 r.fallbackFontAssets.Insert(0, v.Item1);
             }
         }
         foreach (var v in fallbacksFonts.OrderByDescending(x => x.Item2))
         {
-            foreach (var r in rf)
+            fontAssets.Add(v.Item1);
+            if (TMP_Settings.fallbackFontAssets == null)
             {
-                fontAssets.Add(v.Item1);
-                r.fallbackFontAssets.Append(v.Item1);
+                TMP_Settings.instance.private_m_fallbackFontAssets() = new();
             }
+            TMP_Settings.fallbackFontAssets!.Add(v.Item1);
         }
-        
+
         foreach (var v in UnityEngine.Object.FindObjectsOfType<TMP_Text>(true))
         {
             UpdateTMProText(v);
@@ -203,6 +209,10 @@ public static class FontManager
     {
         if (fonts.TryGetValue(font, out var f))
         {
+            foreach (var v in RootFonts)
+            {
+                v.fallbackFontAssets.Remove(f);
+            }
             foreach (var v in RootFonts)
             {
                 v.fallbackFontAssets.Remove(f);

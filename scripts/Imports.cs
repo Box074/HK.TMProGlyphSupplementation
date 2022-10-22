@@ -8,6 +8,8 @@ global using System.Text;
 global using System.Runtime.Serialization;
 global using System.Diagnostics;
 
+global using Unity.Collections;
+
 global using UnityEngine;
 
 global using HKTool;

@@ -26,6 +26,19 @@ class TextMeshProGlyphSupplementation : ModBaseWithSettings<TextMeshProGlyphSupp
         public string fontsDir = Path.Combine(Path.GetDirectoryName(typeof(TextMeshProGlyphSupplementation).Assembly.Location), "fonts");
         public Dictionary<string, FontConfig> fonts = new();
         public Dictionary<int, string> dpngsCache = new();
+        [JsonIgnore]
+        public int AtlasSize
+        {
+            get
+            {
+                atlasSize = Mathf.Clamp(atlasSize, 0, 3);
+                return atlasSize;
+            }
+            set
+            {
+                atlasSize = Mathf.Clamp(atlasSize, 0, 3);
+            }
+        }
         public int atlasSize = 0;
         public FontConfig GetConfig(string innerName)
         {
@@ -100,6 +113,10 @@ class TextMeshProGlyphSupplementation : ModBaseWithSettings<TextMeshProGlyphSupp
         LoadCache();
         onTryLoadFonts?.Invoke();
     }
+    enum ChangeMode
+    {
+        None, Delete, Change
+    }
     private void LoadCache()
     {
         FontManager.autoRefresh = false;
@@ -123,6 +140,8 @@ class TextMeshProGlyphSupplementation : ModBaseWithSettings<TextMeshProGlyphSupp
             caches.Add(n);
         };
         Dictionary<int, (byte[] data, string md5)> pngs = new();
+        Stopwatch watch = new();
+        watch.Start();
         foreach (var v in Directory.GetFiles(DispersivePath, "*.png", SearchOption.AllDirectories))
         {
             var name = Path.GetFileNameWithoutExtension(v);
@@ -138,25 +157,42 @@ class TextMeshProGlyphSupplementation : ModBaseWithSettings<TextMeshProGlyphSupp
             var data = File.ReadAllBytes(v);
             pngs[id] = (data, GetMD5(data));
         }
+        watch.Stop();
+        Log($"Read glyph files: {pngs.Count}({watch.ElapsedMilliseconds}ms)");
         bool loadCache = true;
+        List<(int, ChangeMode)> changed = new(pngs.Count / 10);
         foreach (var v in globalSettings.dpngsCache)
         {
             if (!pngs.TryGetValue(v.Key, out var d))
             {
-                loadCache = false;
+                changed.Add((v.Key, ChangeMode.Delete));
                 break;
             }
             if (d.md5 != v.Value)
             {
-                loadCache = false;
+                changed.Add((v.Key, ChangeMode.Change));
                 break;
             }
+        }
+        if(changed.Count >= (pngs.Count / 2))
+        {
+            loadCache = false;
         }
         if (loadCache)
         {
             try
             {
+                watch.Start();
                 unpackedFont.LoadCache(UnpackedInnerName);
+                watch.Stop();
+                Log($"Load glyph cache: {watch.ElapsedMilliseconds}ms");
+                foreach(var v in changed)
+                {
+                    if(v.Item2 == ChangeMode.Delete)
+                    {
+                        unpackedFont.RemoveGlyph(v.Item1);
+                    }
+                }
             }
             catch (IOException)
             {
@@ -167,6 +203,8 @@ class TextMeshProGlyphSupplementation : ModBaseWithSettings<TextMeshProGlyphSupp
         {
             globalSettings.dpngsCache.Clear();
         }
+        watch.Start();
+        unpackedFont.AutoApply = false;
         foreach(var v in pngs)
         {
             if(globalSettings.dpngsCache.ContainsKey(v.Key) && unpackedFont.HasGlyph(v.Key)) continue;
@@ -176,12 +214,17 @@ class TextMeshProGlyphSupplementation : ModBaseWithSettings<TextMeshProGlyphSupp
             if (tex.width >= 2048 || tex.height >= 2048)
             {
                 LogWarn($"You put a packaged font in the \"{DispersivePath}\" folder, which is too bad!");
+                UnityEngine.Object.Destroy(tex);
                 continue;
             }
-            Log($"Load glyph: {v.Key} {v.Value.md5}");
             unpackedFont.AddGlyph(v.Key, tex);
+            UnityEngine.Object.Destroy(tex);
             globalSettings.dpngsCache[v.Key] = v.Value.md5;
         }
+        unpackedFont.AutoApply = true;
+        watch.Stop();
+        Log($"Apply glyphs: {watch.ElapsedMilliseconds}ms");
+        unpackedFont.ApplyAtlas();
         unpackedFont.SaveCache(UnpackedInnerName, true);
         SaveGlobalSettings();
         foreach (var v in unpackedFont) caches.Add(v);

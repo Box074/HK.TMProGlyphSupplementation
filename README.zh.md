@@ -28,8 +28,9 @@
 ```
 
 分散（未打包）的字形图像以`<unicode>.png`作为文件名，储存在`fonts\dispersive`目录下，在游戏启动时它们会被合并为一个字体资源。你可以使用`font-maker.py`批量生成分散（未打包）的字形图像。命令行格式为`py font_maker.py <ttf字体文件路径> <输出文件夹> <字符串>`。
+(ps: 塞太多后果自负)
 
-已打包的字体图集一般位于`fonts\packed`目录下，以`<atlas id>.png`和`<atlas id>.json`为一组，通常一个字体会包含多个字体图集。你可以使用`gen-font-pack.py`生成完整的字体图集。命令行格式为`py gen-font-pack.py <ttf字体文件路径> <输出文件夹> <图集宽度> <图集高度>`。`图集高度`和`图集宽度`都不能小于1024。
+已打包的字体图集一般位于`fonts\packed`目录下，以`<atlas id>.png`和`<atlas id>.json`为一组，通常一个字体会包含多个字体图集。你可以使用`gen-font-pack.py`生成完整的字体图集。命令行格式为`py gen-font-pack.py <ttf字体文件路径> <输出文件夹> <图集宽度> <图集高度>`。`图集高度`和`图集宽度`都不能小于2048。
 `<atlas id>.json`内容：
 
 ```json

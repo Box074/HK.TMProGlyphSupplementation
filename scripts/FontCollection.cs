@@ -5,9 +5,9 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
 {
     public class FontAtlasInfo : FontCache
     {
-        internal FontAtlasInfo() : base()
+        internal FontAtlasInfo(FontCollectionState state) : base()
         {
-
+            this.state = state;
         }
         public override void Apply()
         {
@@ -37,6 +37,7 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
             }
         }
         public bool HasChange { get; internal set; } = false;
+        internal readonly FontCollectionState state;
         private static readonly byte[] Magic = Encoding.ASCII.GetBytes("TMPFAI\x0233\x6655");
         internal void Save(string cacheName)
         {
@@ -65,7 +66,7 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
                 writer.Write(v.height);
             }
         }
-        internal FontAtlasInfo(BinaryReader reader)
+        internal FontAtlasInfo(BinaryReader reader, FontCollectionState state) : this(state)
         {
             var magic = reader.ReadBytes(Magic.Length);
             for (int i = 0; i < magic.Length; i++) if (magic[i] != Magic[i]) throw new InvalidOperationException();
@@ -87,19 +88,20 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
                 var h = reader.ReadInt32();
                 var glyph = AddGlyph(id, new(x, y, w, h));
                 glyph.y = y;
+                state.unicodeTable[id] = this;
             }
         }
         private TMP_FontAsset? m_fontAsset;
-        public static FontAtlasInfo FromCache(BinaryReader reader)
+        public static FontAtlasInfo FromCache(BinaryReader reader, FontCollectionState state)
         {
-            return new(reader);
+            return new(reader, state);
         }
         public static string GetCachePath(string cacheName) => Path.Combine(TextMeshProGlyphSupplementation.CachePath, GetMD5(cacheName) + ".fai");
-        public static FontAtlasInfo FromCache(string cacheName)
+        public static FontAtlasInfo FromCache(string cacheName, FontCollectionState state)
         {
             var p = GetCachePath(cacheName);
             using var reader = new BinaryReader(File.OpenRead(p));
-            return FromCache(reader);
+            return FromCache(reader, state);
         }
         public bool RemoveGlyph(int unicode)
         {
@@ -140,13 +142,20 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
         public int nextY = 0;
         public int nextYEx = 0;
         public List<FontAtlasInfo> atlas = new();
-        public FontAtlasInfo currentAtlas = new();
+        public FontAtlasInfo currentAtlas;
         public byte[] guid { get; private set; }
         public string guidStr => BitConverter.ToString(guid);
+        internal readonly Dictionary<int, FontAtlasInfo> unicodeTable = new();
         private static readonly byte[] Magic = Encoding.ASCII.GetBytes("TMPFCC\x0233\x6655");
+        
         internal FontCollectionState()
         {
+            currentAtlas = new(this);
             guid = Guid.NewGuid().ToByteArray();
+        }
+        public FontAtlasInfo? FindGlyph(int unicode)
+        {
+            return unicodeTable.TryGetValue(unicode, out var result) ? result : null;
         }
         internal FontCollectionState(BinaryReader reader)
         {
@@ -160,17 +169,18 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
             var g = guidStr;
             if (reader.ReadByte() == 1)
             {
-                currentAtlas = FontAtlasInfo.FromCache(g + "--0");
+                currentAtlas = FontAtlasInfo.FromCache(g + "--0", this);
             }
             else
             {
                 nextX = 0;
                 nextY = 0;
                 nextYEx = 0;
+                currentAtlas = new(this);
             }
             for (int i = 0; i < ac; i++)
             {
-                atlas.Add(FontAtlasInfo.FromCache(g + "-" + i));
+                atlas.Add(FontAtlasInfo.FromCache(g + "-" + i, this));
             }
         }
         public void SaveCache(BinaryWriter writer, bool force = true)
@@ -206,7 +216,7 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
     private FontCollectionState state = new();
     public int padding { get; set; } = 32;
     public bool HasChange => this.Any(x => x.HasChange);
-    public virtual Vector2 atlasSize => TextMeshProGlyphSupplementation.Instance.globalSettings.atlasSize switch
+    public virtual Vector2 atlasSize => TextMeshProGlyphSupplementation.Instance.globalSettings.AtlasSize switch
     {
         -2 => new(16384, 16384),
         -1 => new(8192, 8192),
@@ -246,13 +256,21 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
         LoadCache(reader);
         return true;
     }
-    public bool HasGlyph(int unicode) => this.Any(x => x.glyphs.Any(x1 => x1.id == unicode));
+    public bool HasGlyph(int unicode) => state.FindGlyph(unicode) is not null;
     IEnumerator<FontCollection.FontAtlasInfo> IEnumerable<FontCollection.FontAtlasInfo>.GetEnumerator() => state.atlas.Append(state.currentAtlas)
         .GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<FontCollection.FontAtlasInfo>)this).GetEnumerator();
-    public void AddGlyph(int unicode, Texture2D tex, bool canreplace = true)
+    public bool RemoveGlyph(int unicode)
     {
         var fai = this.FirstOrDefault(x => x.glyphs.Any(x1 => x1.id == unicode));
+        if(fai is null) return false;
+        return fai.RemoveGlyph(unicode);
+    }
+    public bool AutoApply { get; set; } = true;
+    private HashSet<Texture2D> requireApply = new();
+    public void AddGlyph(int unicode, Texture2D tex, bool canreplace = true)
+    {
+        var fai = state.FindGlyph(unicode);
         if(fai is not null)
         {
             if(canreplace)
@@ -285,7 +303,7 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
             {
                 old = state.currentAtlas;
                 state.atlas.Add(state.currentAtlas);
-                state.currentAtlas = new();
+                state.currentAtlas = new(state);
             }
             state.currentAtlas.atlas = new((int)atlasSize.x, (int)atlasSize.y, TextureFormat.RGBA32, false);
             var c = state.currentAtlas.atlas.GetRawTextureData<Color32>();
@@ -312,9 +330,18 @@ public class FontCollection : IEnumerable<FontCollection.FontAtlasInfo>
                 cols[xstart + x] = scols[sxstart + x];
             }
         }
-        atlas.Apply();
+        if(AutoApply) atlas.Apply();
+        else requireApply.Add(atlas);
         state.nextX += tex.width + padding;
 
         state.currentAtlas.AddGlyph(unicode, rect);
+    }
+    public void ApplyAtlas()
+    {
+        foreach(var v in requireApply)
+        {
+            v.Apply();
+        }
+        requireApply.Clear();
     }
 }
