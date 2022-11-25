@@ -66,6 +66,14 @@ public static class FontManager
             if (self.GetComponent<TMP_SubMeshCheck>() is null) self.gameObject.AddComponent<TMP_SubMeshCheck>().submesh = self;
             orig(self);
         };
+        On.TMPro.TMP_SubMesh.AddSubTextObject += (orig, self, mat) =>
+        {
+            if(mat.material == null)
+            {
+                mat.material = mat.fontAsset.material;
+            }
+            return orig(self, mat);
+        };
     }
     class TMP_SubMeshCheck : MonoBehaviour
     {
